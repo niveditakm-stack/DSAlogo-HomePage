@@ -1,72 +1,129 @@
-Feature: Accessing DS Algo Portal Home Page
+@homepage @regression
+Feature: Homepage Navigation and Functionality
 
-Background: 
-Given the user has the browser open
-And the user enters the correct DS Algo portal URL
-
-
-Scenario: Verify that user is able to open the dsAlgo Portal
-Then The user should be able to land on dsAlgo portal with Get Started button
-
-Scenario: Verify contents of DsAlgo Portal
-Then The user should be able to see text "Preparing for the Interviews You are at the right place"
-
-Scenario: Verify the Home page for an user without Sign in
-And user click on "Get Started"
-Then The user should be able see Home Page
-And  the page title should be "Numpy Ninja" on top right of the page with Drop down options
-And the page title should be "Register" "Sign In" on top Left of the page
-
-Scenario: Verify clicking on Register option
-When the user clicks on "Get Started"
-And the user clicks on "Register"
-Then the user should be redirected to the Register page
-
-Scenario: Verify clicking on Sign In option
-When the user clicks on "Get Started"
-And the user clicks on "Sign In"  
-Then The user should be redirected to the Sign In page
-
-Scenario: Verify that the user can view Data Structures dropdown options without signing in
-Given the user is on the Home page
-When the user clicks on the Data Structures dropdown
-Then the user should see the following options:
-    | Data Structures |
-    | Array |
-    | Linked List |
-    | Stack |
-    | Queue |
-    | Tree |
-    | Graph |
+  @noauth @phase1
+  Scenario: User launches the DS Algo Portal application
+    Given The user opens the DS Algo Portal homepage
+    Then The user should see the application homepage
+    And The user should see Get Started button on homepage
 
 
+  @noauth @phase1
+  Scenario: User clicks main Get Started button
+    Given The user opens the DS Algo Portal homepage
+    When The user clicks Get Started button on homepage
+    Then The user should be redirected to home page
 
-Scenario Outline: Warning message shown when selecting an option without signing in
-  Given the user is on the Home page
-  When the user selects "<option>" from the dropdown without signing in
-  Then the user should see a warning message "You are not logged in"
+ 
+  @noauth @phase1
+  Scenario Outline: User tries to access module without login
+    Given The user is on the home page without login
+    When The user clicks on "<Module>" Get Started button
+    Then The user should see alert message "You are not logged in"
 
-Examples:
-  | option |
-  | Data Structures |
-  | Array |
-  | Linked List |
-  | Stack |
-  | Queue |
-  | Tree |
-  | Graph |
+    Examples:
+      | Module                       |
+      | Data Structures-Introduction |
+      | Array                        |
+      | Linked List                  |
+      | Stack                        |
+      | Queue                        |
+      | Tree                         |
+      | Graph                        |
 
-Scenario Outline: Warning message shown when clicking Get Started without signing in
-  Given the user is on the Home page
-  When the user clicks the "Get Started" button for "<module>" on the home page without signing in
-  Then the user should see a warning message "You are not logged in"
+  @noauth @phase1
+  Scenario Outline: User tries to access dropdown menu items without login
+    Given The user is on the home page without login
+    When The user clicks on dropdown menu
+    And The user selects "<MenuItem>" from dropdown
+    Then The user should see alert message "You are not logged in"
 
-Examples:
-  | module |
-  | Data Structures-Introduction |
-  | Array |
-  | Linked List |
-  | Stack |
-  | Queue |
-  | Tree |
-  | Graph |
+    Examples:
+      | MenuItem                     |
+      | Arrays                       |
+      | Linked List                  |
+      | Stack                        |
+      | Queue                        |
+      | Tree                         |
+      | Graph                        |
+
+  @noauth @phase1
+  Scenario: User verifies Sign in link is present on homepage
+    Given The user is on the home page without login
+    Then The user should see Sign in link on homepage
+
+  @noauth @phase1
+  Scenario: User verifies Register link is present on homepage
+    Given The user is on the home page without login
+    Then The user should see Register link on homepage
+
+  @noauth @phase1
+  Scenario: User verifies NumpyNinja link on homepage
+    Given The user is on the home page without login
+    Then The user should see NumpyNinja link in header
+
+  @withauth @phase4
+Scenario Outline: User accesses dropdown menu items after login
+  Given The user is logged in and on Home page
+  When The user clicks on dropdown menu
+  And The user selects "<MenuItem>" from dropdown
+  Then The user should be on "<ModulePage>" module page
+
+  Examples:
+    | MenuItem    | ModulePage   |
+    | Arrays      | Array        |
+    | Linked List | Linked List  |
+    | Stack       | Stack        |
+    | Queue       | Queue        |
+    | Tree        | Tree         |
+    | Graph       | Graph        |
+
+@withauth @phase4
+Scenario Outline: User accesses module pages via Get Started buttons after login
+  Given The user is logged in and on Home page
+  When The user clicks on "<Module>" Get Started button
+  Then The user should be on "<ModulePage>" page
+
+  Examples:
+    | Module                       | ModulePage                   |
+    | Data Structures-Introduction | data-structures-introduction |
+    | Array                        | array                        |
+    | Stack                        | stack                        |
+
+@withauth @phase4
+Scenario: User verifies logged in state on homepage
+  Given The user is logged in and on Home page
+  Then The user should see username displayed in header
+  And The user should see Sign out link on homepage
+
+@withauth @phase4 @crossmodule
+Scenario Outline: User navigates between modules via dropdown
+  Given The user is logged in and on "<StartModule>" page
+  When The user clicks on dropdown menu
+  And The user selects "<TargetModule>" from dropdown
+  Then The user should be on "<TargetModule>" module page
+
+  Examples:
+    | StartModule | TargetModule |
+    | Array       | Stack        |
+    | Stack       | Tree         |
+    | Tree        | Graph        |
+
+@withauth @phase4 @crossmodule
+Scenario: User navigates to landing page via NumpyNinja logo
+  Given The user is logged in and on "Array" page
+  When The user clicks NumpyNinja logo
+  Then The user should be on the landing page
+
+
+
+@withauth @phase4 @logout
+Scenario: User logs out and logs back in
+  Given The user is logged in and on Home page
+  When The user clicks Sign out link from header
+  Then The user should see alert message "Logged out successfully"
+  And The user should see Sign in link on homepage
+  And The user should see Register link on homepage
+  When The user logs in with credentials from environment
+  Then The user should be logged in successfully
+  And The user should see username displayed in header
